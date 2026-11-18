@@ -316,7 +316,7 @@ em { font-family: var(--serif); font-style: italic; font-weight: 400; }
 .founder__card picture { position: absolute; right: 0; bottom: 0; width: 90%; }
 .founder__card img { width: 100%; height: auto; filter: drop-shadow(-12px 10px 30px rgba(0, 0, 0, .3)); }
 .founder__badge {
-  position: absolute; left: -18px; top: 9%; display: flex; align-items: center; gap: 12px;
+  position: absolute; left: -18px; bottom: 0; display: flex; align-items: center; gap: 12px;
   padding: 14px 18px; border-radius: 18px; background: var(--gold); color: var(--forest-900); box-shadow: var(--shadow-lg);
   font-size: 13px; font-weight: 700; line-height: 1.25;
   animation: float 6s ease-in-out infinite;
@@ -637,10 +637,17 @@ em { font-family: var(--serif); font-style: italic; font-weight: 400; }
   .float--b { right: -4px; top: -4px; }
 
   .cards, .steps__list { grid-template-columns: 1fr; }
-  .founder__media { padding: 0 6px 28px; }
-  .founder__badge { left: -4px; padding: 10px 14px; font-size: 12px; }
-  .founder__badge strong { font-size: 42px; }
-  .founder__crc { right: -4px; }
+  .founder__media { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; padding: 0; }
+  .founder__card { flex: 0 0 100%; }
+  .founder__badge, .founder__crc {
+    position: relative; inset: auto; z-index: 1; margin-top: -34px; animation: none;
+    padding: 10px 12px; border-radius: 14px; gap: 8px;
+  }
+  .founder__badge { font-size: 11.5px; }
+  .founder__badge strong { font-size: 38px; }
+  .founder__crc img { display: none; }
+  .founder__crc strong { font-size: 13.5px; }
+  .founder__crc small { font-size: 10px; }
   .pillars { grid-template-columns: 1fr; }
   .pillars li { flex-direction: row; align-items: center; padding: 14px 16px; gap: 14px; }
   .founder__copy .btn { width: 100%; }
