@@ -1,8 +1,13 @@
 /* =========================================================
    Atuali Contabilidade — interações da landing page
    ---------------------------------------------------------
-   Preencha os contatos abaixo. Campos vazios ficam ocultos.
+   Todos os contatos e mensagens ficam neste objeto.
+   Campos vazios ficam ocultos na página.
    whatsapp: só números, com DDI e DDD. Ex.: "5591999999999"
+
+   ATENÇÃO: ao instalar qualquer ferramenta de medição
+   (Google Analytics, Clarity, Cloudflare Web Analytics, Zaraz…),
+   atualize também a página /privacidade.
    ========================================================= */
 const CONFIG = {
   whatsapp: "5591999852261",
@@ -10,7 +15,19 @@ const CONFIG = {
   email: "marioelisio@gmail.com",
   instagram: "atualicontabilidade",
   endereco: "Belém · Pará",
-  fundacao: 2006
+  fundacao: 2006,
+  registroCrc: "1991-09-04", // registro do responsável técnico no CRC-PA
+
+  // Mensagem pré-preenchida do WhatsApp para cada botão (chave = data-cta)
+  mensagens: {
+    menu: "Olá! Vim pelo site da Atuali e gostaria de falar com um contador.",
+    topo: "Olá! Vim pelo site da Atuali e gostaria de receber uma proposta para a minha empresa.",
+    reforma: "Olá! Quero um diagnóstico de como a Reforma Tributária afeta a minha empresa.",
+    "quem-somos": "Olá, Mario! Vim pelo site da Atuali e gostaria de conversar com você.",
+    contato: "Olá! Vim pelo site da Atuali e gostaria de mais informações.",
+    flutuante: "Olá! Vim pelo site da Atuali e tenho uma dúvida.",
+    formulario: "Olá, Atuali Contabilidade! Vim pelo site."
+  }
 };
 
 document.documentElement.classList.remove("no-js");
@@ -29,11 +46,11 @@ document.documentElement.classList.remove("no-js");
   };
   const waNumber = onlyDigits(CONFIG.whatsapp);
   const waLink = (text) =>
-    `https://wa.me/${waNumber}?text=${encodeURIComponent(text || "Olá! Vim pelo site da Atuali Contabilidade e gostaria de mais informações.")}`;
+    `https://wa.me/${waNumber}?text=${encodeURIComponent(text || CONFIG.mensagens.contato)}`;
 
   if (waNumber) {
     $$("[data-whatsapp]").forEach((a) => {
-      a.href = waLink();
+      a.href = waLink(CONFIG.mensagens[a.dataset.cta]);
       a.target = "_blank";
       a.rel = "noopener";
     });
@@ -65,6 +82,22 @@ document.documentElement.classList.remove("no-js");
   }
   if (CONFIG.endereco) $('[data-contact-text="endereco"]').textContent = CONFIG.endereco;
 
+  /* ---------- Cliques nos botões de contato ----------
+     Um único listener para todos os [data-cta].
+     Dispara o evento "atuali:cta" na página e repassa para
+     Zaraz ou Google Analytics somente se estiverem instalados
+     (hoje nenhuma ferramenta de medição está instalada). */
+  const trackCta = (cta) => {
+    const detail = { cta };
+    window.dispatchEvent(new CustomEvent("atuali:cta", { detail }));
+    if (window.zaraz && typeof window.zaraz.track === "function") window.zaraz.track("cta_click", detail);
+    if (typeof window.gtag === "function") window.gtag("event", "cta_click", detail);
+  };
+  document.addEventListener("click", (e) => {
+    const el = e.target.closest("[data-cta]");
+    if (el) trackCta(el.dataset.cta);
+  });
+
   /* ---------- Header + botão flutuante ---------- */
   const header = $(".header");
   const fab = $(".fab");
@@ -78,14 +111,28 @@ document.documentElement.classList.remove("no-js");
 
   /* ---------- Menu mobile ---------- */
   const burger = $(".burger");
-  const setMenu = (open) => {
+  const menuLinks = $$("#menu a");
+  const isOpen = () => document.body.classList.contains("menu-open");
+  const setMenu = (open, { returnFocus = false } = {}) => {
     document.body.classList.toggle("menu-open", open);
     burger.setAttribute("aria-expanded", String(open));
     burger.setAttribute("aria-label", open ? "Fechar menu" : "Abrir menu");
+    if (!open && returnFocus) burger.focus();
   };
-  burger.addEventListener("click", () => setMenu(!document.body.classList.contains("menu-open")));
-  $$("#menu a").forEach((a) => a.addEventListener("click", () => setMenu(false)));
-  document.addEventListener("keydown", (e) => e.key === "Escape" && setMenu(false));
+  burger.addEventListener("click", () => setMenu(!isOpen()));
+  menuLinks.forEach((a) => a.addEventListener("click", () => setMenu(false)));
+  document.addEventListener("keydown", (e) => {
+    if (!isOpen()) return;
+    if (e.key === "Escape") return setMenu(false, { returnFocus: true });
+    // Com o menu aberto, o Tab circula só entre o botão de fechar e os links
+    if (e.key === "Tab") {
+      const items = [burger, ...menuLinks];
+      const i = items.indexOf(document.activeElement);
+      const next = e.shiftKey ? (i <= 0 ? items.length - 1 : i - 1) : (i === -1 || i === items.length - 1 ? 0 : i + 1);
+      e.preventDefault();
+      items[next].focus();
+    }
+  });
   window.matchMedia("(min-width: 961px)").addEventListener("change", (e) => e.matches && setMenu(false));
 
   /* ---------- Animação ao rolar ---------- */
@@ -131,22 +178,24 @@ document.documentElement.classList.remove("no-js");
   form.addEventListener("submit", (e) => {
     e.preventDefault();
     msg.classList.remove("is-error");
-    let ok = true;
+    let firstBad = null;
     ["nome", "telefone", "perfil"].forEach((n) => {
       const el = form.elements[n];
       const bad = n === "telefone" ? onlyDigits(el.value).length < 10 : !el.value.trim();
       el.classList.toggle("is-invalid", bad);
-      if (bad) ok = false;
+      el.setAttribute("aria-invalid", String(bad));
+      if (bad && !firstBad) firstBad = el;
     });
-    if (!ok) {
+    if (firstBad) {
       msg.textContent = "Preencha nome, telefone e o tipo da sua empresa.";
       msg.classList.add("is-error");
+      firstBad.focus();
       return;
     }
 
     const servicos = $$('input[name="servico"]:checked', form).map((i) => i.value);
     const texto = [
-      "Olá, Atuali Contabilidade! Vim pelo site.",
+      CONFIG.mensagens.formulario,
       "",
       `*Nome:* ${form.elements.nome.value.trim()}`,
       `*Telefone:* ${tel.value}`,
@@ -155,6 +204,7 @@ document.documentElement.classList.remove("no-js");
       form.elements.mensagem.value.trim() ? `*Mensagem:* ${form.elements.mensagem.value.trim()}` : ""
     ].filter(Boolean).join("\n");
 
+    trackCta("formulario");
     if (waNumber) {
       window.open(waLink(texto), "_blank", "noopener");
       msg.textContent = "Abrimos o WhatsApp com a sua mensagem. É só enviar!";
@@ -167,13 +217,13 @@ document.documentElement.classList.remove("no-js");
     }
   });
 
-  const ano = new Date().getFullYear();
-  $("#ano").textContent = ano;
-  $$("[data-anos]").forEach((el) => (el.textContent = ano - CONFIG.fundacao));
+  /* ---------- Anos de empresa e de profissão ---------- */
+  const hoje = new Date();
+  $("#ano").textContent = hoje.getFullYear();
+  $$("[data-anos]").forEach((el) => (el.textContent = hoje.getFullYear() - CONFIG.fundacao));
 
-  // Anos de profissão contados a partir do registro no CRC-PA (04/09/1991)
-  const crc = new Date(1991, 8, 4), hoje = new Date();
-  let anosCrc = hoje.getFullYear() - crc.getFullYear();
-  if (hoje < new Date(hoje.getFullYear(), crc.getMonth(), crc.getDate())) anosCrc--;
+  const [cy, cm, cd] = CONFIG.registroCrc.split("-").map(Number);
+  let anosCrc = hoje.getFullYear() - cy;
+  if (hoje < new Date(hoje.getFullYear(), cm - 1, cd)) anosCrc--;
   $$("[data-anos-crc]").forEach((el) => (el.textContent = anosCrc));
 })();

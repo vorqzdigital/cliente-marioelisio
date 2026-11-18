@@ -1,0 +1,17 @@
+# Cabeçalhos do Cloudflare Pages
+# https://developers.cloudflare.com/pages/configuration/headers/
+
+/*
+  Strict-Transport-Security: max-age=31536000
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(), usb=(), browsing-topics=()
+  X-Frame-Options: DENY
+
+# Endereço técnico *.pages.dev fora do Google (o oficial é atualicontabilidade.com.br)
+https://:project.pages.dev/*
+  X-Robots-Tag: noindex
+
+# Fontes e imagens mudam pouco: cache longo no navegador
+/assets/fonts/*
+  Cache-Control: public, max-age=31536000, immutable

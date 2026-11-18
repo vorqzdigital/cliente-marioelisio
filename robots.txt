@@ -1,0 +1,25 @@
+# Atuali Contabilidade — https://atualicontabilidade.com.br
+
+User-agent: *
+Allow: /
+
+# Buscadores e robôs de IA liberados explicitamente
+User-agent: Bingbot
+Allow: /
+
+User-agent: GPTBot
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+User-agent: CCBot
+Allow: /
+
+Sitemap: https://atualicontabilidade.com.br/sitemap.xml

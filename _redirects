@@ -1,0 +1,11 @@
+# Redirecionamentos do Cloudflare Pages
+# https://developers.cloudflare.com/pages/configuration/redirects/
+#
+# IMPORTANTE: este arquivo só aceita caminhos dentro do mesmo domínio.
+# O Cloudflare Pages NÃO faz redirecionamento entre domínios por aqui.
+# O www.atualicontabilidade.com.br -> atualicontabilidade.com.br (301)
+# precisa ser criado no painel do Cloudflare, em Regras > Regras de redirecionamento.
+#
+# Atalhos de endereço para a política de privacidade
+/politica-de-privacidade  /privacidade  301
+/privacy                  /privacidade  301
