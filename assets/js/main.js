@@ -170,4 +170,10 @@ document.documentElement.classList.remove("no-js");
   const ano = new Date().getFullYear();
   $("#ano").textContent = ano;
   $$("[data-anos]").forEach((el) => (el.textContent = ano - CONFIG.fundacao));
+
+  // Anos de profissão contados a partir do registro no CRC-PA (04/09/1991)
+  const crc = new Date(1991, 8, 4), hoje = new Date();
+  let anosCrc = hoje.getFullYear() - crc.getFullYear();
+  if (hoje < new Date(hoje.getFullYear(), crc.getMonth(), crc.getDate())) anosCrc--;
+  $$("[data-anos-crc]").forEach((el) => (el.textContent = anosCrc));
 })();
