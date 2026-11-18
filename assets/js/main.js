@@ -5,11 +5,12 @@
    whatsapp: só números, com DDI e DDD. Ex.: "5591999999999"
    ========================================================= */
 const CONFIG = {
-  whatsapp: "",
-  telefone: "",          // ex.: "(91) 3000-0000"
-  email: "",             // ex.: "contato@atuali.com.br"
-  instagram: "",         // ex.: "atualicontabilidade" (sem @)
-  endereco: "Belém · Pará"
+  whatsapp: "5591999852261",
+  telefone: "",          // fixo (opcional)
+  email: "marioelisio@gmail.com",
+  instagram: "atualicontabilidade",
+  endereco: "Belém · Pará",
+  fundacao: 2006
 };
 
 document.documentElement.classList.remove("no-js");
@@ -166,5 +167,7 @@ document.documentElement.classList.remove("no-js");
     }
   });
 
-  $("#ano").textContent = new Date().getFullYear();
+  const ano = new Date().getFullYear();
+  $("#ano").textContent = ano;
+  $$("[data-anos]").forEach((el) => (el.textContent = ano - CONFIG.fundacao));
 })();
